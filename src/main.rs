@@ -8,6 +8,7 @@ use winit::{
 mod input;
 mod gpu;
 
+
 #[repr(C)]
 #[derive(Clone, Copy, Zeroable, Pod)]
 struct GPUCamera {
@@ -18,7 +19,7 @@ struct GPUCamera {
 #[repr(C)]
 #[derive(Clone, Copy, Zeroable, Pod)]
 struct GPUSprite {
-    screen_region: [f32; 4],
+    screen_region: [f32; 4], // x, y, width, height
     sheet_region: [f32; 4],
 }
 
@@ -290,6 +291,7 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
         usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
         mapped_at_creation: false,
     });
+    
     let mut sprites: Vec<GPUSprite> = vec![
         GPUSprite {
             screen_region: [32.0, 32.0, 64.0, 64.0],
@@ -308,6 +310,17 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
             sheet_region: [16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0],
         },
     ];
+
+    let window_width = config.width as f32;
+    let window_height = config.height as f32;
+
+    // here divide by a number to create the number of grids
+    let cell_width = window_width / 20.0;
+    let cell_height = window_height / 20.0;
+
+    // Initialize sprite position within the grid
+    let mut sprite_position: [f32; 2] = [0.0, 0.0];  
+
     const SPRITE_UNIFORM_SIZE: u64 = 512 * mem::size_of::<GPUSprite>() as u64;
     let buffer_sprite = device.create_buffer(&wgpu::BufferDescriptor {
         label: None,
@@ -347,6 +360,7 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
             ],
         }),
     };
+
     queue.write_buffer(&buffer_camera, 0, bytemuck::bytes_of(&camera));
     queue.write_buffer(&buffer_sprite, 0, bytemuck::cast_slice(&sprites));
     let mut input = input::Input::default();
@@ -367,14 +381,81 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
             }
             Event::RedrawRequested(_) => {
                 // TODO: move sprites, maybe scroll camera
+                // if input.is_key_pressed(winit::event::VirtualKeyCode::Up) {
+                //     sprites[0].screen_region[1] += 10.0; // Adjust the Y-coordinate as needed
+                //     queue.write_buffer(&buffer_sprite, 0, bytemuck::cast_slice(&sprites));
+                // }
+                // if input.is_key_pressed(winit::event::VirtualKeyCode::Down) {
+                //     sprites[0].screen_region[1] -= 10.0; // Adjust the Y-coordinate as needed
+                //     queue.write_buffer(&buffer_sprite, 0, bytemuck::cast_slice(&sprites));
+                // }
+
+                // for sprite in sprites[1..].iter(){
+                //     if  sprite.screen_region[0] < window_width {
+                //         sprite.screen_region[0] += 5.0;
+                //     }else{
+                //         sprite.screen_region[0] = 0.0;
+                //     }
+                // }
+                    //     screen_region: [f32; 4], // x, y, width, height
+                // collision sprites
+                let corners = vec![(sprites[0].screen_region[0], sprites[0].screen_region[1]), 
+                                                    (sprites[0].screen_region[0] + sprites[0].screen_region[2], sprites[0].screen_region[1]),
+                                                    (sprites[0].screen_region[0], sprites[0].screen_region[1]+ sprites[0].screen_region[3]),
+                                                    (sprites[0].screen_region[0] + sprites[0].screen_region[2], sprites[0].screen_region[1]+ sprites[0].screen_region[3])];
+
+                for i in 1..sprites.len() {
+                    for (cx, cy) in corners.iter(){
+                        if cx >= &sprites[i].screen_region[0] && cx <= &(sprites[i].screen_region[0] + sprites[0].screen_region[2]) && cy >= &sprites[i].screen_region[1] && cy <= &(sprites[i].screen_region[1] + sprites[0].screen_region[3]) {
+                            print!("YOU COLLIDED")
+                        }
+                    }
+                }
+                // sprites moving horizontally
+                for i in 1..sprites.len(){
+                    if  sprites[i].screen_region[0] < window_width {
+                        sprites[i].screen_region[0] += 5.0;
+                    }else{
+                        sprites[i].screen_region[0] = 0.0;
+                    }
+                }
+                
+
+
+                // Update sprite position based on keyboard input
                 if input.is_key_pressed(winit::event::VirtualKeyCode::Up) {
-                    sprites[0].screen_region[1] += 10.0; // Adjust the Y-coordinate as needed
-                    queue.write_buffer(&buffer_sprite, 0, bytemuck::cast_slice(&sprites));
+                    sprite_position[1] += cell_height;
+
+                    if sprite_position[1] + sprites[0].screen_region[3] > window_height {
+                        sprite_position[1] = window_height - sprites[0].screen_region[3];
+                    }
                 }
                 if input.is_key_pressed(winit::event::VirtualKeyCode::Down) {
-                    sprites[0].screen_region[1] -= 10.0; // Adjust the Y-coordinate as needed
-                    queue.write_buffer(&buffer_sprite, 0, bytemuck::cast_slice(&sprites));
+                    sprite_position[1] -= cell_height;
+
+                    if sprite_position[1] < 0.0 {
+                        sprite_position[1] = 0.0;
+                    }
                 }
+                if input.is_key_pressed(winit::event::VirtualKeyCode::Left) {
+                    sprite_position[0] -= cell_width;
+
+                    if sprite_position[0] < 0.0 {
+                        sprite_position[0] = 0.0;
+                    }
+                }
+                if input.is_key_pressed(winit::event::VirtualKeyCode::Right) {
+                    sprite_position[0] = cell_width;
+
+                    if sprite_position[0] < window_width {
+                        sprite_position[0] += cell_width;
+                    }
+                }
+
+                //update sprite position
+                sprites[0].screen_region[0] = sprite_position[0];
+                sprites[0].screen_region[1] = sprite_position[1];
+                
                 // Then send the data to the GPU!
                 input.next_frame();
 
