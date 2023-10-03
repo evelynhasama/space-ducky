@@ -291,6 +291,21 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
         usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
         mapped_at_creation: false,
     });
+
+    // let window_width = config.width as f32;
+    // let window_height = config.height as f32;
+
+    let window_width = 1024.0;
+    let window_height = 768.0;
+
+
+    // here divide by a number to create the number of grids
+    let cell_width = window_width / 16.0;
+    let cell_height = window_height / 16.0;
+
+    // Initialize sprite position within the grid
+    let mut sprite_position: [f32; 2] = [0.0, 0.0];  
+
     
     let mut sprites: Vec<GPUSprite> = vec![
         GPUSprite {
@@ -298,28 +313,24 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
             sheet_region: [0.0, 16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0],
         },
         GPUSprite {
-            screen_region: [32.0, 128.0, 64.0, 64.0],
-            sheet_region: [16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0],
-        },
-        GPUSprite {
-            screen_region: [128.0, 32.0, 64.0, 64.0],
+            screen_region: [128.0, 2.0 * cell_height, 64.0, 64.0],
             sheet_region: [0.0, 16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0],
         },
         GPUSprite {
-            screen_region: [128.0, 128.0, 64.0, 64.0],
+            screen_region: [128.0, 3.0 * cell_height, 64.0, 64.0],
+            sheet_region: [0.0, 16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0],
+        },
+        GPUSprite {
+            screen_region: [128.0, 4.0 * cell_height, 64.0, 64.0],
+            // screen_region: [128.0, 128.0, 64.0, 64.0],
+            sheet_region: [16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0],
+        },
+        GPUSprite {
+            screen_region: [128.0, 5.0 * cell_height, 64.0, 64.0],
             sheet_region: [16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0],
         },
     ];
 
-    let window_width = config.width as f32;
-    let window_height = config.height as f32;
-
-    // here divide by a number to create the number of grids
-    let cell_width = window_width / 20.0;
-    let cell_height = window_height / 20.0;
-
-    // Initialize sprite position within the grid
-    let mut sprite_position: [f32; 2] = [0.0, 0.0];  
 
     const SPRITE_UNIFORM_SIZE: u64 = 512 * mem::size_of::<GPUSprite>() as u64;
     let buffer_sprite = device.create_buffer(&wgpu::BufferDescriptor {
@@ -424,12 +435,13 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
 
                 // Update sprite position based on keyboard input
                 if input.is_key_pressed(winit::event::VirtualKeyCode::Up) {
-                    sprite_position[1] += cell_height;
-
-                    if sprite_position[1] + sprites[0].screen_region[3] > window_height {
-                        sprite_position[1] = window_height - sprites[0].screen_region[3];
+                    if sprite_position[1] + cell_height < window_height {
+                        sprite_position[1] += cell_height;
+                    } else {
+                        sprite_position[1] = window_height - cell_height;
                     }
                 }
+                
                 if input.is_key_pressed(winit::event::VirtualKeyCode::Down) {
                     sprite_position[1] -= cell_height;
 
@@ -445,12 +457,12 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
                     }
                 }
                 if input.is_key_pressed(winit::event::VirtualKeyCode::Right) {
-                    sprite_position[0] = cell_width;
-
-                    if sprite_position[0] < window_width {
+                    if sprite_position[0] + cell_width < window_width {
                         sprite_position[0] += cell_width;
+                    } else {
+                        sprite_position[0] = window_width - cell_width;
                     }
-                }
+                }                
 
                 //update sprite position
                 sprites[0].screen_region[0] = sprite_position[0];
