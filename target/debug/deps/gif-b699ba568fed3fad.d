@@ -1,0 +1,11 @@
+/Users/evelynhasama/Documents/Classes/cs181/space-ducky/target/debug/deps/gif-b699ba568fed3fad.rmeta: /Users/evelynhasama/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gif-0.12.0/src/lib.rs /Users/evelynhasama/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gif-0.12.0/src/traits.rs /Users/evelynhasama/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gif-0.12.0/src/common.rs /Users/evelynhasama/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gif-0.12.0/src/reader/mod.rs /Users/evelynhasama/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gif-0.12.0/src/reader/decoder.rs /Users/evelynhasama/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gif-0.12.0/src/encoder.rs /Users/evelynhasama/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gif-0.12.0/src/../README.md
+
+/Users/evelynhasama/Documents/Classes/cs181/space-ducky/target/debug/deps/gif-b699ba568fed3fad.d: /Users/evelynhasama/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gif-0.12.0/src/lib.rs /Users/evelynhasama/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gif-0.12.0/src/traits.rs /Users/evelynhasama/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gif-0.12.0/src/common.rs /Users/evelynhasama/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gif-0.12.0/src/reader/mod.rs /Users/evelynhasama/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gif-0.12.0/src/reader/decoder.rs /Users/evelynhasama/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gif-0.12.0/src/encoder.rs /Users/evelynhasama/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gif-0.12.0/src/../README.md
+
+/Users/evelynhasama/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gif-0.12.0/src/lib.rs:
+/Users/evelynhasama/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gif-0.12.0/src/traits.rs:
+/Users/evelynhasama/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gif-0.12.0/src/common.rs:
+/Users/evelynhasama/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gif-0.12.0/src/reader/mod.rs:
+/Users/evelynhasama/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gif-0.12.0/src/reader/decoder.rs:
+/Users/evelynhasama/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gif-0.12.0/src/encoder.rs:
+/Users/evelynhasama/.cargo/registry/src/index.crates.io-6f17d22bba15001f/gif-0.12.0/src/../README.md:

@@ -379,12 +379,6 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
     let mut game_over = false; 
 
     event_loop.run(move |event, _, control_flow| {
-        // exit the game if collide
-        // if game_over {
-        //     print!("GameOver");
-        //     *control_flow = ControlFlow::Exit; 
-        //     return; 
-        // }
 
         *control_flow = ControlFlow::Wait;
         match event {
@@ -400,86 +394,97 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
                 window.request_redraw();
             }
             Event::RedrawRequested(_) => {
-                // collision sprites
-                let corners = vec![(sprites[0].screen_region[0], sprites[0].screen_region[1]), 
-                                                    (sprites[0].screen_region[0] + sprites[0].screen_region[2], sprites[0].screen_region[1]),
-                                                    (sprites[0].screen_region[0], sprites[0].screen_region[1]+ sprites[0].screen_region[3]),
-                                                    (sprites[0].screen_region[0] + sprites[0].screen_region[2], sprites[0].screen_region[1]+ sprites[0].screen_region[3])];
+                if game_over {
+                    sprites[0].screen_region[1] -= 5.0;
+                    if sprites[0].screen_region[1] < 0.0 {
+                        println!("GameOver");
+                        *control_flow = ControlFlow::Exit; 
+                        return;
+                    }
+                }
 
-                // sprites moving horizontally
-                for i in 1..sprites.len(){
-                    // if even move right
-                    if i%2==0{
-                        if sprites[i].screen_region[0] < window_width{
-                            sprites[i].screen_region[0] += 5.0;
-                        }else{
-                            let num = rand::thread_rng().gen_range(1.0..10.0); 
-                            sprites[i].screen_region[0] = 0.0;
-                            sprites[i].screen_region[1] =  num as f32 * cell_height;
+                else {
+
+                    // collision sprites
+                    let corners = vec![(sprites[0].screen_region[0], sprites[0].screen_region[1]), 
+                                                        (sprites[0].screen_region[0] + sprites[0].screen_region[2], sprites[0].screen_region[1]),
+                                                        (sprites[0].screen_region[0], sprites[0].screen_region[1]+ sprites[0].screen_region[3]),
+                                                        (sprites[0].screen_region[0] + sprites[0].screen_region[2], sprites[0].screen_region[1]+ sprites[0].screen_region[3])];
+
+                    // sprites moving horizontally
+                    for i in 1..sprites.len(){
+                        // if even move right
+                        if i%2==0{
+                            if sprites[i].screen_region[0] < window_width{
+                                sprites[i].screen_region[0] += 5.0;
+                            }else{
+                                let num = rand::thread_rng().gen_range(1.0..10.0); 
+                                sprites[i].screen_region[0] = 0.0;
+                                sprites[i].screen_region[1] =  num as f32 * cell_height;
+                            }
+                        } else { // odd move left
+                            if sprites[i].screen_region[0] > 0.0{
+                                sprites[i].screen_region[0] -= 5.0;
+                            }else{
+                                let num = rand::thread_rng().gen_range(1.0..10.0); 
+                                sprites[i].screen_region[0] = window_width;
+                                sprites[i].screen_region[1] =  num as f32 * cell_height;
+                            }
                         }
-                    } else { // odd move left
-                        if sprites[i].screen_region[0] > 0.0{
-                            sprites[i].screen_region[0] -= 5.0;
-                        }else{
-                            let num = rand::thread_rng().gen_range(1.0..10.0); 
-                            sprites[i].screen_region[0] = window_width;
-                            sprites[i].screen_region[1] =  num as f32 * cell_height;
+                        
+                        // if  sprites[i].screen_region[0] < window_width && i%2==0 {
+                        //     sprites[i].screen_region[0] += 5.0;
+                        // }
+                        // else{
+                        //     sprites[i].screen_region[0] = 0.0;
+                        // }
+                    }
+
+                    for i in 1..sprites.len() {
+                        for (cx, cy) in corners.iter(){
+                            if cx >= &sprites[i].screen_region[0] && cx <= &(sprites[i].screen_region[0] + sprites[0].screen_region[2]) && cy >= &sprites[i].screen_region[1] && cy <= &(sprites[i].screen_region[1] + sprites[0].screen_region[3]) {
+                                print!("COLLIDED");
+                                game_over = true;
+                            }
                         }
                     }
                     
-                    // if  sprites[i].screen_region[0] < window_width && i%2==0 {
-                    //     sprites[i].screen_region[0] += 5.0;
-                    // }
-                    // else{
-                    //     sprites[i].screen_region[0] = 0.0;
-                    // }
-                }
 
-                for i in 1..sprites.len() {
-                    for (cx, cy) in corners.iter(){
-                        if cx >= &sprites[i].screen_region[0] && cx <= &(sprites[i].screen_region[0] + sprites[0].screen_region[2]) && cy >= &sprites[i].screen_region[1] && cy <= &(sprites[i].screen_region[1] + sprites[0].screen_region[3]) {
-                            print!("COLLIDED");
-                            game_over = true;
+                    // Update sprite position based on keyboard input
+                    if input.is_key_pressed(winit::event::VirtualKeyCode::Up) {
+                        if sprite_position[1] + cell_height < window_height {
+                            sprite_position[1] += cell_height;
+                        } else {
+                            sprite_position[1] = window_height - cell_height;
                         }
                     }
-                }
-                
+                    
+                    if input.is_key_pressed(winit::event::VirtualKeyCode::Down) {
+                        sprite_position[1] -= cell_height;
 
-                // Update sprite position based on keyboard input
-                if input.is_key_pressed(winit::event::VirtualKeyCode::Up) {
-                    if sprite_position[1] + cell_height < window_height {
-                        sprite_position[1] += cell_height;
-                    } else {
-                        sprite_position[1] = window_height - cell_height;
+                        if sprite_position[1] < 0.0 {
+                            sprite_position[1] = 0.0;
+                        }
                     }
-                }
-                
-                if input.is_key_pressed(winit::event::VirtualKeyCode::Down) {
-                    sprite_position[1] -= cell_height;
+                    if input.is_key_pressed(winit::event::VirtualKeyCode::Left) {
+                        sprite_position[0] -= cell_width;
 
-                    if sprite_position[1] < 0.0 {
-                        sprite_position[1] = 0.0;
+                        if sprite_position[0] < 0.0 {
+                            sprite_position[0] = 0.0;
+                        }
                     }
+                    if input.is_key_pressed(winit::event::VirtualKeyCode::Right) {
+                        if sprite_position[0] + cell_width < window_width {
+                            sprite_position[0] += cell_width;
+                        } else {
+                            sprite_position[0] = window_width - cell_width;
+                        }
+                    }                
+
+                    //update sprite position
+                    sprites[0].screen_region[0] = sprite_position[0];
+                    sprites[0].screen_region[1] = sprite_position[1];
                 }
-                if input.is_key_pressed(winit::event::VirtualKeyCode::Left) {
-                    sprite_position[0] -= cell_width;
-
-                    if sprite_position[0] < 0.0 {
-                        sprite_position[0] = 0.0;
-                    }
-                }
-                if input.is_key_pressed(winit::event::VirtualKeyCode::Right) {
-                    if sprite_position[0] + cell_width < window_width {
-                        sprite_position[0] += cell_width;
-                    } else {
-                        sprite_position[0] = window_width - cell_width;
-                    }
-                }                
-
-                //update sprite position
-                sprites[0].screen_region[0] = sprite_position[0];
-                sprites[0].screen_region[1] = sprite_position[1];
-
                 
                 // Then send the data to the GPU!
                 input.next_frame();
