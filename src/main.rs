@@ -313,20 +313,20 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
             sheet_region: [0.0, 16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0],
         },
         GPUSprite {
-            screen_region: [128.0, 2.0 * cell_height, 64.0, 64.0],
+            screen_region: [window_width, 2.0 * cell_height, 64.0, 64.0],
             sheet_region: [0.0, 16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0],
         },
         GPUSprite {
-            screen_region: [128.0, 3.0 * cell_height, 64.0, 64.0],
+            screen_region: [0.0, 3.0 * cell_height, 64.0, 64.0],
             sheet_region: [0.0, 16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0],
         },
         GPUSprite {
-            screen_region: [128.0, 4.0 * cell_height, 64.0, 64.0],
+            screen_region: [window_width, 4.0 * cell_height, 64.0, 64.0],
             // screen_region: [128.0, 128.0, 64.0, 64.0],
             sheet_region: [16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0],
         },
         GPUSprite {
-            screen_region: [128.0, 5.0 * cell_height, 64.0, 64.0],
+            screen_region: [0.0, 5.0 * cell_height, 64.0, 64.0],
             sheet_region: [16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0],
         },
     ];
@@ -375,7 +375,15 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
     queue.write_buffer(&buffer_camera, 0, bytemuck::bytes_of(&camera));
     queue.write_buffer(&buffer_sprite, 0, bytemuck::cast_slice(&sprites));
     let mut input = input::Input::default();
+    let mut game_over = false; 
+
     event_loop.run(move |event, _, control_flow| {
+        // exit the game if collide
+        // if game_over {
+        //     print!("GameOver");
+        //     *control_flow = ControlFlow::Exit; 
+        //     return; 
+        // }
 
         *control_flow = ControlFlow::Wait;
         match event {
@@ -391,47 +399,46 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
                 window.request_redraw();
             }
             Event::RedrawRequested(_) => {
-                // TODO: move sprites, maybe scroll camera
-                // if input.is_key_pressed(winit::event::VirtualKeyCode::Up) {
-                //     sprites[0].screen_region[1] += 10.0; // Adjust the Y-coordinate as needed
-                //     queue.write_buffer(&buffer_sprite, 0, bytemuck::cast_slice(&sprites));
-                // }
-                // if input.is_key_pressed(winit::event::VirtualKeyCode::Down) {
-                //     sprites[0].screen_region[1] -= 10.0; // Adjust the Y-coordinate as needed
-                //     queue.write_buffer(&buffer_sprite, 0, bytemuck::cast_slice(&sprites));
-                // }
-
-                // for sprite in sprites[1..].iter(){
-                //     if  sprite.screen_region[0] < window_width {
-                //         sprite.screen_region[0] += 5.0;
-                //     }else{
-                //         sprite.screen_region[0] = 0.0;
-                //     }
-                // }
-                    //     screen_region: [f32; 4], // x, y, width, height
                 // collision sprites
                 let corners = vec![(sprites[0].screen_region[0], sprites[0].screen_region[1]), 
                                                     (sprites[0].screen_region[0] + sprites[0].screen_region[2], sprites[0].screen_region[1]),
                                                     (sprites[0].screen_region[0], sprites[0].screen_region[1]+ sprites[0].screen_region[3]),
                                                     (sprites[0].screen_region[0] + sprites[0].screen_region[2], sprites[0].screen_region[1]+ sprites[0].screen_region[3])];
 
+                // sprites moving horizontally
+                for i in 1..sprites.len(){
+                    // if even move right
+                    if i%2==0{
+                        if sprites[i].screen_region[0] < window_width{
+                            sprites[i].screen_region[0] += 5.0;
+                        }else{
+                            sprites[i].screen_region[0] = 0.0;
+                        }
+                    } else { // odd move left
+                        if sprites[i].screen_region[0] > 0.0{
+                            sprites[i].screen_region[0] -= 5.0;
+                        }else{
+                            sprites[i].screen_region[0] = window_width;
+                        }
+                    }
+                    
+                    // if  sprites[i].screen_region[0] < window_width && i%2==0 {
+                    //     sprites[i].screen_region[0] += 5.0;
+                    // }
+                    // else{
+                    //     sprites[i].screen_region[0] = 0.0;
+                    // }
+                }
+
                 for i in 1..sprites.len() {
                     for (cx, cy) in corners.iter(){
                         if cx >= &sprites[i].screen_region[0] && cx <= &(sprites[i].screen_region[0] + sprites[0].screen_region[2]) && cy >= &sprites[i].screen_region[1] && cy <= &(sprites[i].screen_region[1] + sprites[0].screen_region[3]) {
-                            print!("YOU COLLIDED")
+                            print!("COLLIDED");
+                            game_over = true;
                         }
                     }
                 }
-                // sprites moving horizontally
-                for i in 1..sprites.len(){
-                    if  sprites[i].screen_region[0] < window_width {
-                        sprites[i].screen_region[0] += 5.0;
-                    }else{
-                        sprites[i].screen_region[0] = 0.0;
-                    }
-                }
                 
-
 
                 // Update sprite position based on keyboard input
                 if input.is_key_pressed(winit::event::VirtualKeyCode::Up) {
@@ -467,6 +474,7 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
                 //update sprite position
                 sprites[0].screen_region[0] = sprite_position[0];
                 sprites[0].screen_region[1] = sprite_position[1];
+
                 
                 // Then send the data to the GPU!
                 input.next_frame();
