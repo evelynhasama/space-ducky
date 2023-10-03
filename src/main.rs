@@ -7,6 +7,7 @@ use winit::{
 };
 mod input;
 mod gpu;
+use rand::Rng; // 0.8.5
 
 
 #[repr(C)]
@@ -291,6 +292,21 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
         usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
         mapped_at_creation: false,
     });
+
+    // let window_width = config.width as f32;
+    // let window_height = config.height as f32;
+
+    let window_width = 1024.0;
+    let window_height = 768.0;
+
+
+    // here divide by a number to create the number of grids
+    let cell_width = window_width / 16.0;
+    let cell_height = window_height / 16.0;
+
+    // Initialize sprite position within the grid
+    let mut sprite_position: [f32; 2] = [0.0, 0.0];  
+
     
     let mut sprites: Vec<GPUSprite> = vec![
         GPUSprite {
@@ -298,28 +314,24 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
             sheet_region: [0.0, 16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0],
         },
         GPUSprite {
-            screen_region: [32.0, 128.0, 64.0, 64.0],
-            sheet_region: [16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0],
-        },
-        GPUSprite {
-            screen_region: [128.0, 32.0, 64.0, 64.0],
+            screen_region: [window_width, 2.0 * cell_height, 64.0, 64.0],
             sheet_region: [0.0, 16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0],
         },
         GPUSprite {
-            screen_region: [128.0, 128.0, 64.0, 64.0],
+            screen_region: [0.0, 3.0 * cell_height, 64.0, 64.0],
+            sheet_region: [0.0, 16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0],
+        },
+        GPUSprite {
+            screen_region: [window_width, 4.0 * cell_height, 64.0, 64.0],
+            // screen_region: [128.0, 128.0, 64.0, 64.0],
+            sheet_region: [16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0],
+        },
+        GPUSprite {
+            screen_region: [0.0, 5.0 * cell_height, 64.0, 64.0],
             sheet_region: [16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0],
         },
     ];
 
-    let window_width = config.width as f32;
-    let window_height = config.height as f32;
-
-    // here divide by a number to create the number of grids
-    let cell_width = window_width / 20.0;
-    let cell_height = window_height / 20.0;
-
-    // Initialize sprite position within the grid
-    let mut sprite_position: [f32; 2] = [0.0, 0.0];  
 
     const SPRITE_UNIFORM_SIZE: u64 = 512 * mem::size_of::<GPUSprite>() as u64;
     let buffer_sprite = device.create_buffer(&wgpu::BufferDescriptor {
@@ -364,7 +376,15 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
     queue.write_buffer(&buffer_camera, 0, bytemuck::bytes_of(&camera));
     queue.write_buffer(&buffer_sprite, 0, bytemuck::cast_slice(&sprites));
     let mut input = input::Input::default();
+    let mut game_over = false; 
+
     event_loop.run(move |event, _, control_flow| {
+        // exit the game if collide
+        // if game_over {
+        //     print!("GameOver");
+        //     *control_flow = ControlFlow::Exit; 
+        //     return; 
+        // }
 
         *control_flow = ControlFlow::Wait;
         match event {
@@ -380,56 +400,60 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
                 window.request_redraw();
             }
             Event::RedrawRequested(_) => {
-                // TODO: move sprites, maybe scroll camera
-                // if input.is_key_pressed(winit::event::VirtualKeyCode::Up) {
-                //     sprites[0].screen_region[1] += 10.0; // Adjust the Y-coordinate as needed
-                //     queue.write_buffer(&buffer_sprite, 0, bytemuck::cast_slice(&sprites));
-                // }
-                // if input.is_key_pressed(winit::event::VirtualKeyCode::Down) {
-                //     sprites[0].screen_region[1] -= 10.0; // Adjust the Y-coordinate as needed
-                //     queue.write_buffer(&buffer_sprite, 0, bytemuck::cast_slice(&sprites));
-                // }
-
-                // for sprite in sprites[1..].iter(){
-                //     if  sprite.screen_region[0] < window_width {
-                //         sprite.screen_region[0] += 5.0;
-                //     }else{
-                //         sprite.screen_region[0] = 0.0;
-                //     }
-                // }
-                    //     screen_region: [f32; 4], // x, y, width, height
                 // collision sprites
                 let corners = vec![(sprites[0].screen_region[0], sprites[0].screen_region[1]), 
                                                     (sprites[0].screen_region[0] + sprites[0].screen_region[2], sprites[0].screen_region[1]),
                                                     (sprites[0].screen_region[0], sprites[0].screen_region[1]+ sprites[0].screen_region[3]),
                                                     (sprites[0].screen_region[0] + sprites[0].screen_region[2], sprites[0].screen_region[1]+ sprites[0].screen_region[3])];
 
+                // sprites moving horizontally
+                for i in 1..sprites.len(){
+                    // if even move right
+                    if i%2==0{
+                        if sprites[i].screen_region[0] < window_width{
+                            sprites[i].screen_region[0] += 5.0;
+                        }else{
+                            let num = rand::thread_rng().gen_range(1.0..10.0); 
+                            sprites[i].screen_region[0] = 0.0;
+                            sprites[i].screen_region[1] =  num as f32 * cell_height;
+                        }
+                    } else { // odd move left
+                        if sprites[i].screen_region[0] > 0.0{
+                            sprites[i].screen_region[0] -= 5.0;
+                        }else{
+                            let num = rand::thread_rng().gen_range(1.0..10.0); 
+                            sprites[i].screen_region[0] = window_width;
+                            sprites[i].screen_region[1] =  num as f32 * cell_height;
+                        }
+                    }
+                    
+                    // if  sprites[i].screen_region[0] < window_width && i%2==0 {
+                    //     sprites[i].screen_region[0] += 5.0;
+                    // }
+                    // else{
+                    //     sprites[i].screen_region[0] = 0.0;
+                    // }
+                }
+
                 for i in 1..sprites.len() {
                     for (cx, cy) in corners.iter(){
                         if cx >= &sprites[i].screen_region[0] && cx <= &(sprites[i].screen_region[0] + sprites[0].screen_region[2]) && cy >= &sprites[i].screen_region[1] && cy <= &(sprites[i].screen_region[1] + sprites[0].screen_region[3]) {
-                            print!("YOU COLLIDED")
+                            print!("COLLIDED");
+                            game_over = true;
                         }
-                    }
-                }
-                // sprites moving horizontally
-                for i in 1..sprites.len(){
-                    if  sprites[i].screen_region[0] < window_width {
-                        sprites[i].screen_region[0] += 5.0;
-                    }else{
-                        sprites[i].screen_region[0] = 0.0;
                     }
                 }
                 
 
-
                 // Update sprite position based on keyboard input
                 if input.is_key_pressed(winit::event::VirtualKeyCode::Up) {
-                    sprite_position[1] += cell_height;
-
-                    if sprite_position[1] + sprites[0].screen_region[3] > window_height {
-                        sprite_position[1] = window_height - sprites[0].screen_region[3];
+                    if sprite_position[1] + cell_height < window_height {
+                        sprite_position[1] += cell_height;
+                    } else {
+                        sprite_position[1] = window_height - cell_height;
                     }
                 }
+                
                 if input.is_key_pressed(winit::event::VirtualKeyCode::Down) {
                     sprite_position[1] -= cell_height;
 
@@ -445,16 +469,17 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
                     }
                 }
                 if input.is_key_pressed(winit::event::VirtualKeyCode::Right) {
-                    sprite_position[0] = cell_width;
-
-                    if sprite_position[0] < window_width {
+                    if sprite_position[0] + cell_width < window_width {
                         sprite_position[0] += cell_width;
+                    } else {
+                        sprite_position[0] = window_width - cell_width;
                     }
-                }
+                }                
 
                 //update sprite position
                 sprites[0].screen_region[0] = sprite_position[0];
                 sprites[0].screen_region[1] = sprite_position[1];
+
                 
                 // Then send the data to the GPU!
                 input.next_frame();
