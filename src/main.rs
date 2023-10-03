@@ -7,6 +7,7 @@ use winit::{
 };
 mod input;
 mod gpu;
+use rand::Rng; // 0.8.5
 
 
 #[repr(C)]
@@ -412,13 +413,17 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
                         if sprites[i].screen_region[0] < window_width{
                             sprites[i].screen_region[0] += 5.0;
                         }else{
+                            let num = rand::thread_rng().gen_range(1.0..10.0); 
                             sprites[i].screen_region[0] = 0.0;
+                            sprites[i].screen_region[1] =  num as f32 * cell_height;
                         }
                     } else { // odd move left
                         if sprites[i].screen_region[0] > 0.0{
                             sprites[i].screen_region[0] -= 5.0;
                         }else{
+                            let num = rand::thread_rng().gen_range(1.0..10.0); 
                             sprites[i].screen_region[0] = window_width;
+                            sprites[i].screen_region[1] =  num as f32 * cell_height;
                         }
                     }
                     
