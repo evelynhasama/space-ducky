@@ -339,36 +339,36 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
     
     let mut sprites: Vec<GPUSprite> = vec![
         GPUSprite {
-            screen_region: [32.0, 32.0, 64.0, 64.0],
+            screen_region: [window_width/2.0, 32.0, 64.0, 64.0],
             sheet_region: [0.0, 0.0, 0.5, 0.5], // duck
         },
         GPUSprite {
-            screen_region: [window_width, rand::thread_rng().gen_range(0..number_of_cells) as f32 * cell_height, 64.0, 64.0],
+            screen_region: [window_width, rand::thread_rng().gen_range(1..number_of_cells) as f32 * cell_height, 64.0, 64.0],
             sheet_region: [0.5, 0.0, 0.5, 0.5], //bomb
         },
         GPUSprite {
-            screen_region: [0.0, rand::thread_rng().gen_range(0..number_of_cells) as f32 * cell_height, 64.0, 64.0],
+            screen_region: [0.0, rand::thread_rng().gen_range(1..number_of_cells) as f32 * cell_height, 64.0, 64.0],
             sheet_region: [0.5, 0.5, 0.5, 0.5], // asteroid
         },
         GPUSprite {
-            screen_region: [window_width, rand::thread_rng().gen_range(0..number_of_cells) as f32 * cell_height, 64.0, 64.0],
+            screen_region: [window_width, rand::thread_rng().gen_range(1..number_of_cells) as f32 * cell_height, 64.0, 64.0],
             // screen_region: [128.0, 128.0, 64.0, 64.0],
             sheet_region: [0.5, 0.0, 0.5, 0.5], //bomb
         },
         GPUSprite {
-            screen_region: [0.0, rand::thread_rng().gen_range(0..number_of_cells) as f32 * cell_height, 64.0, 64.0],
+            screen_region: [0.0, rand::thread_rng().gen_range(1..number_of_cells) as f32 * cell_height, 64.0, 64.0],
             sheet_region: [0.0, 0.5, 0.5, 0.5], // star
         },
         GPUSprite {
-            screen_region: [window_width, rand::thread_rng().gen_range(0..number_of_cells) as f32 * cell_height, 64.0, 64.0],
+            screen_region: [window_width, rand::thread_rng().gen_range(1..number_of_cells) as f32 * cell_height, 64.0, 64.0],
             sheet_region: [0.5, 0.0, 0.5, 0.5], //bomb
         },
         GPUSprite {
-            screen_region: [0.0, rand::thread_rng().gen_range(0..number_of_cells) as f32 * cell_height, 64.0, 64.0],
+            screen_region: [0.0, rand::thread_rng().gen_range(1..number_of_cells) as f32 * cell_height, 64.0, 64.0],
             sheet_region: [0.5, 0.5, 0.5, 0.5], // asteroid
         },
         GPUSprite {
-            screen_region: [window_width, rand::thread_rng().gen_range(0..number_of_cells) as f32 * cell_height, 64.0, 64.0],
+            screen_region: [window_width, rand::thread_rng().gen_range(1..number_of_cells) as f32 * cell_height, 64.0, 64.0],
             sheet_region: [0.5, 0.0, 0.5, 0.5], //bomb
         },
     ];
@@ -629,7 +629,7 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
                                 view: &view,
                                 resolve_target: None,
                                 ops: wgpu::Operations {
-                                    load: wgpu::LoadOp::Clear(wgpu::Color::BLACK),
+                                    load: wgpu::LoadOp::Clear(purple_color),
                                     store: true,
                                 },
                             })],
