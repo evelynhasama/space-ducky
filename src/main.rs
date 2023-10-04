@@ -293,16 +293,15 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
         mapped_at_creation: false,
     });
 
-    // let window_width = config.width as f32;
-    // let window_height = config.height as f32;
-
+    // get the width and height of the whole game screen
     let window_width = 1024.0;
     let window_height = 768.0;
 
+    let number_of_cells = 16;
 
     // here divide by a number to create the number of grids
-    let cell_width = window_width / 16.0;
-    let cell_height = window_height / 16.0;
+    let cell_width = window_width / number_of_cells as f32;
+    let cell_height = window_height / number_of_cells as f32;
 
     // Initialize sprite position within the grid
     let mut sprite_position: [f32; 2] = [0.0, 0.0];  
@@ -314,20 +313,32 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
             sheet_region: [0.0, 16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0],
         },
         GPUSprite {
-            screen_region: [window_width, 2.0 * cell_height, 64.0, 64.0],
+            screen_region: [window_width, rand::thread_rng().gen_range(0..number_of_cells) as f32 * cell_height, 64.0, 64.0],
             sheet_region: [0.0, 16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0],
         },
         GPUSprite {
-            screen_region: [0.0, 3.0 * cell_height, 64.0, 64.0],
+            screen_region: [0.0, rand::thread_rng().gen_range(0..number_of_cells) as f32 * cell_height, 64.0, 64.0],
             sheet_region: [0.0, 16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0],
         },
         GPUSprite {
-            screen_region: [window_width, 4.0 * cell_height, 64.0, 64.0],
+            screen_region: [window_width, rand::thread_rng().gen_range(0..number_of_cells) as f32 * cell_height, 64.0, 64.0],
             // screen_region: [128.0, 128.0, 64.0, 64.0],
             sheet_region: [16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0],
         },
         GPUSprite {
-            screen_region: [0.0, 5.0 * cell_height, 64.0, 64.0],
+            screen_region: [0.0, rand::thread_rng().gen_range(0..number_of_cells) as f32 * cell_height, 64.0, 64.0],
+            sheet_region: [16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0],
+        },
+        GPUSprite {
+            screen_region: [window_width, rand::thread_rng().gen_range(0..number_of_cells) as f32 * cell_height, 64.0, 64.0],
+            sheet_region: [16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0],
+        },
+        GPUSprite {
+            screen_region: [0.0, rand::thread_rng().gen_range(0..number_of_cells) as f32 * cell_height, 64.0, 64.0],
+            sheet_region: [16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0],
+        },
+        GPUSprite {
+            screen_region: [window_width, rand::thread_rng().gen_range(0..number_of_cells) as f32 * cell_height, 64.0, 64.0],
             sheet_region: [16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0],
         },
     ];
@@ -406,6 +417,7 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
                                                     (sprites[0].screen_region[0], sprites[0].screen_region[1]+ sprites[0].screen_region[3]),
                                                     (sprites[0].screen_region[0] + sprites[0].screen_region[2], sprites[0].screen_region[1]+ sprites[0].screen_region[3])];
 
+
                 // sprites moving horizontally
                 for i in 1..sprites.len(){
                     // if even move right
@@ -413,7 +425,7 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
                         if sprites[i].screen_region[0] < window_width{
                             sprites[i].screen_region[0] += 5.0;
                         }else{
-                            let num = rand::thread_rng().gen_range(1.0..10.0); 
+                            let num = rand::thread_rng().gen_range(1..10); 
                             sprites[i].screen_region[0] = 0.0;
                             sprites[i].screen_region[1] =  num as f32 * cell_height;
                         }
@@ -421,7 +433,7 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
                         if sprites[i].screen_region[0] > 0.0{
                             sprites[i].screen_region[0] -= 5.0;
                         }else{
-                            let num = rand::thread_rng().gen_range(1.0..10.0); 
+                            let num = rand::thread_rng().gen_range(1..10); 
                             sprites[i].screen_region[0] = window_width;
                             sprites[i].screen_region[1] =  num as f32 * cell_height;
                         }
@@ -444,7 +456,6 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
                     }
                 }
                 
-
                 // Update sprite position based on keyboard input
                 if input.is_key_pressed(winit::event::VirtualKeyCode::Up) {
                     if sprite_position[1] + cell_height < window_height {
