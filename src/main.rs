@@ -377,6 +377,7 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
     queue.write_buffer(&buffer_sprite, 0, bytemuck::cast_slice(&sprites));
     let mut input = input::Input::default();
     let mut game_over = false; 
+    let mut you_won = false;
 
     event_loop.run(move |event, _, control_flow| {
 
@@ -398,6 +399,23 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
                     sprites[0].screen_region[1] -= 5.0;
                     if sprites[0].screen_region[1] < 0.0 {
                         println!("GameOver");
+                        *control_flow = ControlFlow::Exit; 
+                        return;
+                    }
+                }
+
+                else if you_won {
+                    // enemy sprites fall!
+                    let mut enemies = sprites.len()-1;
+                    for i in 1..sprites.len(){
+                        sprites[i].screen_region[1] -= 5.0;
+                        if sprites[i].screen_region[1] < 0.0 {
+                            enemies -= 1;
+                        }
+                    }
+
+                    if enemies == 0 {
+                        println!("Game over!");
                         *control_flow = ControlFlow::Exit; 
                         return;
                     }
@@ -456,6 +474,7 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
                             sprite_position[1] += cell_height;
                         } else {
                             sprite_position[1] = window_height - cell_height;
+                            you_won = true;
                         }
                     }
                     
