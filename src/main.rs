@@ -261,7 +261,7 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
 
     surface.configure(&device, &config);
 
-    let (sprite_tex, _sprite_img) = load_texture("content/king.png", None, &device, &queue)
+    let (sprite_tex, _sprite_img) = load_texture("content/sprites.png", None, &device, &queue)
         .await
         .expect("Couldn't load spritesheet texture");
     let view_sprite = sprite_tex.create_view(&wgpu::TextureViewDescriptor::default());
@@ -310,24 +310,52 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
     let mut sprites: Vec<GPUSprite> = vec![
         GPUSprite {
             screen_region: [32.0, 32.0, 64.0, 64.0],
-            sheet_region: [0.0, 16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0],
+            sheet_region: [0.0, 0.0, 0.5, 0.5], // duck
         },
         GPUSprite {
             screen_region: [128.0, 2.0 * cell_height, 64.0, 64.0],
-            sheet_region: [0.0, 16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0],
+            sheet_region: [0.0, 0.5, 0.5, 0.5], // star
         },
         GPUSprite {
             screen_region: [128.0, 3.0 * cell_height, 64.0, 64.0],
-            sheet_region: [0.0, 16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0],
+            sheet_region: [0.5, 0.5, 0.5, 0.5], // asteroid
         },
         GPUSprite {
             screen_region: [128.0, 4.0 * cell_height, 64.0, 64.0],
             // screen_region: [128.0, 128.0, 64.0, 64.0],
-            sheet_region: [16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0],
+            sheet_region: [0.5, 0.0, 0.5, 0.5], //bomb
         },
         GPUSprite {
             screen_region: [128.0, 5.0 * cell_height, 64.0, 64.0],
-            sheet_region: [16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0, 16.0 / 32.0],
+            sheet_region: [0.5, 0.5, 0.5, 0.5], // asteroid
+        },
+        GPUSprite {
+            screen_region: [128.0, 6.0 * cell_height, 64.0, 64.0],
+            sheet_region: [0.5, 0.0, 0.5, 0.5], //bomb
+        },
+        GPUSprite {
+            screen_region: [128.0, 7.0 * cell_height, 64.0, 64.0],
+            sheet_region: [0.5, 0.5, 0.5, 0.5], // asteroid
+        },
+        GPUSprite {
+            screen_region: [128.0, 8.0 * cell_height, 64.0, 64.0],
+            sheet_region: [0.0, 0.5, 0.5, 0.5], // star
+        },
+        GPUSprite {
+            screen_region: [128.0, 9.0 * cell_height, 64.0, 64.0],
+            sheet_region: [0.5, 0.0, 0.5, 0.5], //bomb
+        },
+        GPUSprite {
+            screen_region: [128.0, 10.0 * cell_height, 64.0, 64.0],
+            sheet_region: [0.5, 0.5, 0.5, 0.5], // asteroid
+        },
+        GPUSprite {
+            screen_region: [128.0, 11.0 * cell_height, 64.0, 64.0],
+            sheet_region:  [0.5, 0.0, 0.5, 0.5], //bomb
+        },
+        GPUSprite {
+            screen_region: [128.0, 12.0 * cell_height, 64.0, 64.0],
+            sheet_region: [0.0, 0.5, 0.5, 0.5], // star
         },
     ];
 
@@ -480,6 +508,14 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
                 let view = frame
                     .texture
                     .create_view(&wgpu::TextureViewDescriptor::default());
+                
+                let purple_color = wgpu::Color {
+                        r: 0.5, // Red component (ranges from 0.0 to 1.0)
+                        g: 0.0, // Green component (ranges from 0.0 to 1.0)
+                        b: 0.5, // Blue component (ranges from 0.0 to 1.0)
+                        a: 1.0, // Alpha (transparency) component, set to 1.0 for fully opaque
+                    };
+                
                 let mut encoder =
                     device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
                 {
@@ -489,7 +525,8 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
                             view: &view,
                             resolve_target: None,
                             ops: wgpu::Operations {
-                                load: wgpu::LoadOp::Clear(wgpu::Color::BLACK),
+                                // load: wgpu::LoadOp::Clear(wgpu::Color::BLACK),
+                                load: wgpu::LoadOp::Clear(purple_color),
                                 store: true,
                             },
                         })],
