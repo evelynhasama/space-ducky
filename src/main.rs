@@ -7,6 +7,7 @@ use winit::{
 };
 mod input;
 mod gpu;
+use rand::Rng; // 0.8.5
 
 
 #[repr(C)]
@@ -94,6 +95,11 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
     let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
         label: None,
         source: wgpu::ShaderSource::Wgsl(Cow::Borrowed(include_str!("shader.wgsl"))),
+    });
+
+    let shader2 = device.create_shader_module(wgpu::ShaderModuleDescriptor {
+        label: None,
+        source: wgpu::ShaderSource::Wgsl(Cow::Borrowed(include_str!("shader2.wgsl"))),
     });
 
     let texture_bind_group_layout =
@@ -205,8 +211,33 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
         push_constant_ranges: &[],
     });
 
+    let pipeline_layout_over = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+        label: None,
+        bind_group_layouts: &[&texture_bind_group_layout],
+        push_constant_ranges: &[],
+    });
+
     let swapchain_capabilities = surface.get_capabilities(&adapter);
     let swapchain_format = swapchain_capabilities.formats[0];
+
+    let render_pipeline_over = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+        label: None,
+        layout: Some(&pipeline_layout_over),
+        vertex: wgpu::VertexState {
+            module: &shader2,
+            entry_point: "vs_main",
+            buffers: &[],
+        },
+        fragment: Some(wgpu::FragmentState {
+            module: &shader2,
+            entry_point: "fs_main",
+            targets: &[Some(swapchain_format.into())],
+        }),
+        primitive: wgpu::PrimitiveState::default(),
+        depth_stencil: None,
+        multisample: wgpu::MultisampleState::default(),
+        multiview: None,
+    });
 
     let render_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
         label: None,
@@ -292,16 +323,15 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
         mapped_at_creation: false,
     });
 
-    // let window_width = config.width as f32;
-    // let window_height = config.height as f32;
-
+    // get the width and height of the whole game screen
     let window_width = 1024.0;
     let window_height = 768.0;
 
+    let number_of_cells = 16;
 
     // here divide by a number to create the number of grids
-    let cell_width = window_width / 16.0;
-    let cell_height = window_height / 16.0;
+    let cell_width = window_width / number_of_cells as f32;
+    let cell_height = window_height / number_of_cells as f32;
 
     // Initialize sprite position within the grid
     let mut sprite_position: [f32; 2] = [0.0, 0.0];  
@@ -313,49 +343,33 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
             sheet_region: [0.0, 0.0, 0.5, 0.5], // duck
         },
         GPUSprite {
-            screen_region: [128.0, 2.0 * cell_height, 64.0, 64.0],
-            sheet_region: [0.0, 0.5, 0.5, 0.5], // star
+            screen_region: [window_width, rand::thread_rng().gen_range(0..number_of_cells) as f32 * cell_height, 64.0, 64.0],
+            sheet_region: [0.5, 0.0, 0.5, 0.5], //bomb
         },
         GPUSprite {
-            screen_region: [128.0, 3.0 * cell_height, 64.0, 64.0],
+            screen_region: [0.0, rand::thread_rng().gen_range(0..number_of_cells) as f32 * cell_height, 64.0, 64.0],
             sheet_region: [0.5, 0.5, 0.5, 0.5], // asteroid
         },
         GPUSprite {
-            screen_region: [128.0, 4.0 * cell_height, 64.0, 64.0],
+            screen_region: [window_width, rand::thread_rng().gen_range(0..number_of_cells) as f32 * cell_height, 64.0, 64.0],
             // screen_region: [128.0, 128.0, 64.0, 64.0],
             sheet_region: [0.5, 0.0, 0.5, 0.5], //bomb
         },
         GPUSprite {
-            screen_region: [128.0, 5.0 * cell_height, 64.0, 64.0],
-            sheet_region: [0.5, 0.5, 0.5, 0.5], // asteroid
-        },
-        GPUSprite {
-            screen_region: [128.0, 6.0 * cell_height, 64.0, 64.0],
-            sheet_region: [0.5, 0.0, 0.5, 0.5], //bomb
-        },
-        GPUSprite {
-            screen_region: [128.0, 7.0 * cell_height, 64.0, 64.0],
-            sheet_region: [0.5, 0.5, 0.5, 0.5], // asteroid
-        },
-        GPUSprite {
-            screen_region: [128.0, 8.0 * cell_height, 64.0, 64.0],
+            screen_region: [0.0, rand::thread_rng().gen_range(0..number_of_cells) as f32 * cell_height, 64.0, 64.0],
             sheet_region: [0.0, 0.5, 0.5, 0.5], // star
         },
         GPUSprite {
-            screen_region: [128.0, 9.0 * cell_height, 64.0, 64.0],
+            screen_region: [window_width, rand::thread_rng().gen_range(0..number_of_cells) as f32 * cell_height, 64.0, 64.0],
             sheet_region: [0.5, 0.0, 0.5, 0.5], //bomb
         },
         GPUSprite {
-            screen_region: [128.0, 10.0 * cell_height, 64.0, 64.0],
+            screen_region: [0.0, rand::thread_rng().gen_range(0..number_of_cells) as f32 * cell_height, 64.0, 64.0],
             sheet_region: [0.5, 0.5, 0.5, 0.5], // asteroid
         },
         GPUSprite {
-            screen_region: [128.0, 11.0 * cell_height, 64.0, 64.0],
-            sheet_region:  [0.5, 0.0, 0.5, 0.5], //bomb
-        },
-        GPUSprite {
-            screen_region: [128.0, 12.0 * cell_height, 64.0, 64.0],
-            sheet_region: [0.0, 0.5, 0.5, 0.5], // star
+            screen_region: [window_width, rand::thread_rng().gen_range(0..number_of_cells) as f32 * cell_height, 64.0, 64.0],
+            sheet_region: [0.5, 0.0, 0.5, 0.5], //bomb
         },
     ];
 
@@ -403,6 +417,19 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
     queue.write_buffer(&buffer_camera, 0, bytemuck::bytes_of(&camera));
     queue.write_buffer(&buffer_sprite, 0, bytemuck::cast_slice(&sprites));
     let mut input = input::Input::default();
+    let mut game_over = false; 
+    let mut you_won = false;
+    let mut show_end_screen = false;
+
+   //LOAD TEXTURE
+   let (tex_win, _win_image) = load_texture("content/youWin.png",None, &device, &queue)
+        .await
+        .expect("Couldn't load game over img");
+    
+   let (tex_over, _over_image) = load_texture("content/gameOver.png",None, &device, &queue)
+        .await
+        .expect("Couldn't load game over img");
+
     event_loop.run(move |event, _, control_flow| {
 
         *control_flow = ControlFlow::Wait;
@@ -419,82 +446,111 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
                 window.request_redraw();
             }
             Event::RedrawRequested(_) => {
-                // TODO: move sprites, maybe scroll camera
-                // if input.is_key_pressed(winit::event::VirtualKeyCode::Up) {
-                //     sprites[0].screen_region[1] += 10.0; // Adjust the Y-coordinate as needed
-                //     queue.write_buffer(&buffer_sprite, 0, bytemuck::cast_slice(&sprites));
-                // }
-                // if input.is_key_pressed(winit::event::VirtualKeyCode::Down) {
-                //     sprites[0].screen_region[1] -= 10.0; // Adjust the Y-coordinate as needed
-                //     queue.write_buffer(&buffer_sprite, 0, bytemuck::cast_slice(&sprites));
-                // }
+                if game_over {
+                    sprites[0].screen_region[1] -= 5.0;
+                    if sprites[0].screen_region[1] < 0.0 {
+                        show_end_screen = true;
+                    }
+                }
 
-                // for sprite in sprites[1..].iter(){
-                //     if  sprite.screen_region[0] < window_width {
-                //         sprite.screen_region[0] += 5.0;
-                //     }else{
-                //         sprite.screen_region[0] = 0.0;
-                //     }
-                // }
-                    //     screen_region: [f32; 4], // x, y, width, height
-                // collision sprites
-                let corners = vec![(sprites[0].screen_region[0], sprites[0].screen_region[1]), 
-                                                    (sprites[0].screen_region[0] + sprites[0].screen_region[2], sprites[0].screen_region[1]),
-                                                    (sprites[0].screen_region[0], sprites[0].screen_region[1]+ sprites[0].screen_region[3]),
-                                                    (sprites[0].screen_region[0] + sprites[0].screen_region[2], sprites[0].screen_region[1]+ sprites[0].screen_region[3])];
-
-                for i in 1..sprites.len() {
-                    for (cx, cy) in corners.iter(){
-                        if cx >= &sprites[i].screen_region[0] && cx <= &(sprites[i].screen_region[0] + sprites[0].screen_region[2]) && cy >= &sprites[i].screen_region[1] && cy <= &(sprites[i].screen_region[1] + sprites[0].screen_region[3]) {
-                            print!("YOU COLLIDED")
+                else if you_won {
+                    // enemy sprites fall!
+                    let mut enemies = sprites.len()-1;
+                    for i in 1..sprites.len(){
+                        sprites[i].screen_region[1] -= 5.0;
+                        if sprites[i].screen_region[1] < 0.0 {
+                            enemies -= 1;
                         }
                     }
+
+                    if enemies == 0 {
+                        show_end_screen = true;
+                    }
                 }
+
+                else {
+
+                    // collision sprites
+                    let corners = vec![(sprites[0].screen_region[0], sprites[0].screen_region[1]), 
+                                                        (sprites[0].screen_region[0] + sprites[0].screen_region[2], sprites[0].screen_region[1]),
+                                                        (sprites[0].screen_region[0], sprites[0].screen_region[1]+ sprites[0].screen_region[3]),
+                                                        (sprites[0].screen_region[0] + sprites[0].screen_region[2], sprites[0].screen_region[1]+ sprites[0].screen_region[3])];
+
+    
                 // sprites moving horizontally
-                for i in 1..sprites.len(){
-                    if  sprites[i].screen_region[0] < window_width {
-                        sprites[i].screen_region[0] += 5.0;
-                    }else{
-                        sprites[i].screen_region[0] = 0.0;
+                    for i in 1..sprites.len(){
+                        // if even move right
+                        if i%2==0{
+                            if sprites[i].screen_region[0] < window_width{
+                                sprites[i].screen_region[0] += 5.0;
+                            }else{
+                                let num = rand::thread_rng().gen_range(1..10); 
+                                sprites[i].screen_region[0] = 0.0;
+                                sprites[i].screen_region[1] =  num as f32 * cell_height;
+                            }
+                        } else { // odd move left
+                            if sprites[i].screen_region[0] > 0.0{
+                                sprites[i].screen_region[0] -= 5.0;
+                            } else {
+                                let num = rand::thread_rng().gen_range(1..10); 
+                                sprites[i].screen_region[0] = window_width;
+                                sprites[i].screen_region[1] =  num as f32 * cell_height;
+                            }
+                        }
+                        
+                        // if  sprites[i].screen_region[0] < window_width && i%2==0 {
+                        //     sprites[i].screen_region[0] += 5.0;
+                        // }
+                        // else{
+                        //     sprites[i].screen_region[0] = 0.0;
+                        // }
                     }
+
+                    for i in 1..sprites.len() {
+                        for (cx, cy) in corners.iter(){
+                            if cx >= &sprites[i].screen_region[0] && cx <= &(sprites[i].screen_region[0] + sprites[0].screen_region[2]) && cy >= &sprites[i].screen_region[1] && cy <= &(sprites[i].screen_region[1] + sprites[0].screen_region[3]) {
+                                print!("COLLIDED");
+                                game_over = true;
+                            }
+                        }
+                    }
+                    
+                    // Update sprite position based on keyboard input
+                    if input.is_key_pressed(winit::event::VirtualKeyCode::Up) {
+                        if sprite_position[1] + cell_height < window_height {
+                            sprite_position[1] += cell_height;
+                        } else {
+                            sprite_position[1] = window_height - cell_height;
+                            you_won = true;
+                        }
+                    }
+                    
+                    if input.is_key_pressed(winit::event::VirtualKeyCode::Down) {
+                        sprite_position[1] -= cell_height;
+
+                        if sprite_position[1] < 0.0 {
+                            sprite_position[1] = 0.0;
+                        }
+                    }
+                    if input.is_key_pressed(winit::event::VirtualKeyCode::Left) {
+                        sprite_position[0] -= cell_width;
+
+                        if sprite_position[0] < 0.0 {
+                            sprite_position[0] = 0.0;
+                        }
+                    }
+                    if input.is_key_pressed(winit::event::VirtualKeyCode::Right) {
+                        if sprite_position[0] + cell_width < window_width {
+                            sprite_position[0] += cell_width;
+                        } else {
+                            sprite_position[0] = window_width - cell_width;
+                        }
+                    }                
+
+                    //update sprite position
+                    sprites[0].screen_region[0] = sprite_position[0];
+                    sprites[0].screen_region[1] = sprite_position[1];
                 }
-                
-
-
-                // Update sprite position based on keyboard input
-                if input.is_key_pressed(winit::event::VirtualKeyCode::Up) {
-                    if sprite_position[1] + cell_height < window_height {
-                        sprite_position[1] += cell_height;
-                    } else {
-                        sprite_position[1] = window_height - cell_height;
-                    }
-                }
-                
-                if input.is_key_pressed(winit::event::VirtualKeyCode::Down) {
-                    sprite_position[1] -= cell_height;
-
-                    if sprite_position[1] < 0.0 {
-                        sprite_position[1] = 0.0;
-                    }
-                }
-                if input.is_key_pressed(winit::event::VirtualKeyCode::Left) {
-                    sprite_position[0] -= cell_width;
-
-                    if sprite_position[0] < 0.0 {
-                        sprite_position[0] = 0.0;
-                    }
-                }
-                if input.is_key_pressed(winit::event::VirtualKeyCode::Right) {
-                    if sprite_position[0] + cell_width < window_width {
-                        sprite_position[0] += cell_width;
-                    } else {
-                        sprite_position[0] = window_width - cell_width;
-                    }
-                }                
-
-                //update sprite position
-                sprites[0].screen_region[0] = sprite_position[0];
-                sprites[0].screen_region[1] = sprite_position[1];
                 
                 // Then send the data to the GPU!
                 input.next_frame();
@@ -519,30 +575,79 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
                 let mut encoder =
                     device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
                 {
-                    let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-                        label: None,
-                        color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                            view: &view,
-                            resolve_target: None,
-                            ops: wgpu::Operations {
-                                // load: wgpu::LoadOp::Clear(wgpu::Color::BLACK),
-                                load: wgpu::LoadOp::Clear(purple_color),
-                                store: true,
-                            },
-                        })],
-                        depth_stencil_attachment: None,
-                    });
-                    rpass.set_pipeline(&render_pipeline);
-                    if SPRITES == SpriteOption::VertexBuffer {
-                        rpass.set_vertex_buffer(0, buffer_sprite.slice(..));
+                    if show_end_screen{
+                        let tex_end = 
+                        if game_over {
+                            &tex_over
+                        } else {
+                            &tex_win
+                        };
+                        
+                        let view_end = tex_end.create_view(&wgpu::TextureViewDescriptor::default());
+                        let sampler_end = device.create_sampler(&wgpu::SamplerDescriptor::default());
+                     
+                        let tex_over_bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
+                            label: None,
+                            layout: &texture_bind_group_layout,
+                            entries: &[
+                                // One for the texture, one for the sampler
+                                wgpu::BindGroupEntry {
+                                    binding: 0,
+                                    resource: wgpu::BindingResource::TextureView(&view_end),
+                                },
+                                wgpu::BindGroupEntry {
+                                    binding: 1,
+                                    resource: wgpu::BindingResource::Sampler(&sampler_end),
+                                },
+                            ],
+                        });
+                        
+                        let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                            label: None,
+                            color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+                                view: &view,
+                                resolve_target: None,
+                                ops: wgpu::Operations {
+                                    load: wgpu::LoadOp::Clear(purple_color),
+                                    store: true,
+                                },
+                            })],
+                            depth_stencil_attachment: None,
+                        });
+
+                        rpass.set_pipeline(&render_pipeline_over);
+                        // Attach the bind group for group 0
+                        rpass.set_bind_group(0, &tex_over_bind_group, &[]);
+                        // Now draw two triangles!
+                        rpass.draw(0..6, 0..1);
                     }
-                    rpass.set_bind_group(0, &sprite_bind_group, &[]);
-                    rpass.set_bind_group(1, &texture_bind_group, &[]);
-                    // draw two triangles per sprite, and sprites-many sprites.
-                    // this uses instanced drawing, but it would also be okay
-                    // to draw 6 * sprites.len() vertices and use modular arithmetic
-                    // to figure out which sprite we're drawing.
-                    rpass.draw(0..6, 0..(sprites.len() as u32));
+
+                    else {
+                        let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                            label: None,
+                            color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+                                view: &view,
+                                resolve_target: None,
+                                ops: wgpu::Operations {
+                                    load: wgpu::LoadOp::Clear(wgpu::Color::BLACK),
+                                    store: true,
+                                },
+                            })],
+                            depth_stencil_attachment: None,
+                        });
+
+                        rpass.set_pipeline(&render_pipeline);
+                        if SPRITES == SpriteOption::VertexBuffer {
+                            rpass.set_vertex_buffer(0, buffer_sprite.slice(..));
+                        }
+                        rpass.set_bind_group(0, &sprite_bind_group, &[]);
+                        rpass.set_bind_group(1, &texture_bind_group, &[]);
+                        // draw two triangles per sprite, and sprites-many sprites.
+                        // this uses instanced drawing, but it would also be okay
+                        // to draw 6 * sprites.len() vertices and use modular arithmetic
+                        // to figure out which sprite we're drawing.
+                        rpass.draw(0..6, 0..(sprites.len() as u32));
+                    }
                 }
                 queue.submit(Some(encoder.finish()));
                 frame.present();
