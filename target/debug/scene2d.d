@@ -1,1 +1,0 @@
-/Users/evelynhasama/Documents/Classes/cs181/space-ducky/target/debug/scene2d: /Users/evelynhasama/Documents/Classes/cs181/space-ducky/src/gpu.rs /Users/evelynhasama/Documents/Classes/cs181/space-ducky/src/input.rs /Users/evelynhasama/Documents/Classes/cs181/space-ducky/src/main.rs /Users/evelynhasama/Documents/Classes/cs181/space-ducky/src/shader.wgsl
