@@ -260,7 +260,6 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
     // Initialize sprite position within the grid
     let mut sprite_position: [f32; 2] = [512.0, 0.0];  
 
-
     const SPRITE_UNIFORM_SIZE: u64 = 512 * mem::size_of::<GPUSprite>() as u64;
     let buffer_sprite = gpu.device.create_buffer(&wgpu::BufferDescriptor {
         label: None,
