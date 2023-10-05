@@ -46,8 +46,6 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
     // let mut input = input::Input::default();
     // let mut renderer = sprites::SpriteRenderer::new(&gpu);
     
-    
-
     let size = window.inner_size();
 
     log::info!("Use sprite mode {:?}", SPRITES);
@@ -334,7 +332,7 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
     let cell_height = window_height / number_of_cells as f32;
 
     // Initialize sprite position within the grid
-    let mut sprite_position: [f32; 2] = [0.0, 0.0];  
+    let mut sprite_position: [f32; 2] = [512.0, 0.0];  
 
     
     let mut sprites: Vec<GPUSprite> = vec![
