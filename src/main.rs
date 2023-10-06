@@ -163,7 +163,7 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
         push_constant_ranges: &[],
     });
 
-    let render_pipeline_over = gpu.device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+    let render_pipeline_full = gpu.device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
         label: None,
         layout: Some(&pipeline_layout_over),
         vertex: wgpu::VertexState {
@@ -300,6 +300,31 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
         }),
     };
 
+    // create background stuff
+    let path_bgnd = Path::new("content/space.jpeg");
+    let (tex_bgnd, _over_image) = gpu.load_texture(path_bgnd,None)
+        .await
+        .expect("Couldn't load space img");
+
+    let view_bgnd = tex_bgnd.create_view(&wgpu::TextureViewDescriptor::default());
+    let sampler_bgnd = gpu.device.create_sampler(&wgpu::SamplerDescriptor::default());
+        
+    let mut texture_bind_group_bgnd = gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
+        label: None,
+        layout: &texture_bind_group_layout,
+        entries: &[
+            // One for the texture, one for the sampler
+            wgpu::BindGroupEntry {
+                binding: 0,
+                resource: wgpu::BindingResource::TextureView(&view_bgnd),
+            },
+            wgpu::BindGroupEntry {
+                binding: 1,
+                resource: wgpu::BindingResource::Sampler(&sampler_bgnd),
+            },
+        ],
+    });
+
     gpu.queue.write_buffer(&buffer_camera, 0, bytemuck::bytes_of(&camera));
     gpu.queue.write_buffer(&buffer_sprite, 0, bytemuck::cast_slice(&sprites));
     let mut input = input::Input::default();
@@ -425,16 +450,21 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
                     .texture
                     .create_view(&wgpu::TextureViewDescriptor::default());
                 
-                let purple_color = wgpu::Color {
-                        r: 0.5, // Red component (ranges from 0.0 to 1.0)
-                        g: 0.0, // Green component (ranges from 0.0 to 1.0)
-                        b: 0.5, // Blue component (ranges from 0.0 to 1.0)
-                        a: 1.0, // Alpha (transparency) component, set to 1.0 for fully opaque
-                    };
-                
                 let mut encoder =
                     gpu.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
-                {
+                    {
+                    let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                        label: None,
+                        color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+                            view: &view,
+                            resolve_target: None,
+                            ops: wgpu::Operations {
+                                load: wgpu::LoadOp::Clear(wgpu::Color::TRANSPARENT),
+                                store: true,
+                            },
+                        })],
+                        depth_stencil_attachment: None,
+                    });
                     if show_end_screen{
                         let tex_end = 
                         if game_over {
@@ -442,11 +472,10 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
                         } else {
                             &tex_win
                         };
-                        
                         let view_end = tex_end.create_view(&wgpu::TextureViewDescriptor::default());
                         let sampler_end = gpu.device.create_sampler(&wgpu::SamplerDescriptor::default());
-                     
-                        let tex_over_bind_group = gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
+                            
+                        texture_bind_group_bgnd = gpu.device.create_bind_group(&wgpu::BindGroupDescriptor {
                             label: None,
                             layout: &texture_bind_group_layout,
                             entries: &[
@@ -461,52 +490,30 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
                                 },
                             ],
                         });
-                        
-                        let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-                            label: None,
-                            color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                                view: &view,
-                                resolve_target: None,
-                                ops: wgpu::Operations {
-                                    load: wgpu::LoadOp::Clear(purple_color),
-                                    store: true,
-                                },
-                            })],
-                            depth_stencil_attachment: None,
-                        });
 
-                        rpass.set_pipeline(&render_pipeline_over);
-                        // Attach the bind group for group 0
-                        rpass.set_bind_group(0, &tex_over_bind_group, &[]);
-                        // Now draw two triangles!
+                        // Draw end game screen
+                        rpass.set_pipeline(&render_pipeline_full);
+                        rpass.set_bind_group(0, &texture_bind_group_bgnd, &[]);
                         rpass.draw(0..6, 0..1);
-                    }
-
-                    else {
-                        let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-                            label: None,
-                            color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                                view: &view,
-                                resolve_target: None,
-                                ops: wgpu::Operations {
-                                    load: wgpu::LoadOp::Clear(purple_color),
-                                    store: true,
-                                },
-                            })],
-                            depth_stencil_attachment: None,
-                        });
-
-                        rpass.set_pipeline(&render_pipeline);
-                        if SPRITES == SpriteOption::VertexBuffer {
-                            rpass.set_vertex_buffer(0, buffer_sprite.slice(..));
+                    } else {
+                        
+                        // Draw space background
+                        rpass.set_pipeline(&render_pipeline_full);
+                        rpass.set_bind_group(0, &texture_bind_group_bgnd, &[]);
+                        rpass.draw(0..6, 0..1);
+                        {
+                            rpass.set_pipeline(&render_pipeline);
+                            if SPRITES == SpriteOption::VertexBuffer {
+                                rpass.set_vertex_buffer(0, buffer_sprite.slice(..));
+                            }
+                            rpass.set_bind_group(0, &sprite_bind_group, &[]);
+                            rpass.set_bind_group(1, &texture_bind_group, &[]);
+                            // draw two triangles per sprite, and sprites-many sprites.
+                            // this uses instanced drawing, but it would also be okay
+                            // to draw 6 * sprites.len() vertices and use modular arithmetic
+                            // to figure out which sprite we're drawing.
+                            rpass.draw(0..6, 0..(sprites.len() as u32));
                         }
-                        rpass.set_bind_group(0, &sprite_bind_group, &[]);
-                        rpass.set_bind_group(1, &texture_bind_group, &[]);
-                        // draw two triangles per sprite, and sprites-many sprites.
-                        // this uses instanced drawing, but it would also be okay
-                        // to draw 6 * sprites.len() vertices and use modular arithmetic
-                        // to figure out which sprite we're drawing.
-                        rpass.draw(0..6, 0..(sprites.len() as u32));
                     }
                 }
                 gpu.queue.submit(Some(encoder.finish()));
