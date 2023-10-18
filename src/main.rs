@@ -256,7 +256,8 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
         mapped_at_creation: false,
     });
 
-    let mut sprites = sprites::create_sprites();
+    let mut sprites: Vec<GPUSprite> = sprites::create_sprites();
+
     // Initialize sprite position within the grid
     let mut sprite_position: [f32; 2] = [512.0, 0.0];  
 
@@ -363,39 +364,80 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
 
     
                 // sprites moving horizontally
-                    for i in 1..sprites.len(){
-                        // if even move right
-                        if i%2==0{
-                            if sprites[i].screen_region[0] < WINDOW_WIDTH{
-                                sprites[i].screen_region[0] += 5.0;
-                            }else{
-                                let num = rand::thread_rng().gen_range(1..10); 
-                                sprites[i].screen_region[0] = 0.0;
-                                sprites[i].screen_region[1] =  num as f32 * CELL_HEIGHT;
-                            }
-                        } else { // odd move left
-                            if sprites[i].screen_region[0] > 0.0{
-                                sprites[i].screen_region[0] -= 5.0;
+                    // for i in 1..sprites.len(){
+                        
+                    //     if sprites[i].direction ==0{
+                    //         // If direction is 0, move right
+                    //         if sprites[i].screen_region[0] < WINDOW_WIDTH {
+                    //             sprites[i].screen_region[0] += 1.0;
+                    //         } else {
+                    //             sprites[i].screen_region[0] = 0.0;
+                    //         }
+                    //     } else {
+                    //         // If direction is 1, move left
+                    //         if sprites[i].screen_region[0] > 0.0 {
+                    //             sprites[i].screen_region[0] -= 1.0;
+                    //         } else {
+                    //             sprites[i].screen_region[0] = WINDOW_WIDTH;
+                    //         }
+                    //     }
+
+                    let mut direction_switch_counter = 0;
+                    let mut current_direction = 0; // Start with direction 0 (right)
+
+                    for i in 1..sprites.len() {
+                        if current_direction == 0 {
+                            // If direction is 0 (right), move right
+                            if sprites[i].screen_region[0] < WINDOW_WIDTH {
+                                sprites[i].screen_region[0] += 1.0;
                             } else {
-                                let num = rand::thread_rng().gen_range(1..10); 
+                                sprites[i].screen_region[0] = 0.0;
+                            }
+                        } else {
+                            // If direction is 1 (left), move left
+                            if sprites[i].screen_region[0] > 0.0 {
+                                sprites[i].screen_region[0] -= 1.0;
+                            } else {
                                 sprites[i].screen_region[0] = WINDOW_WIDTH;
-                                sprites[i].screen_region[1] =  num as f32 * CELL_HEIGHT;
                             }
                         }
-                        
-                        // if  sprites[i].screen_region[0] < window_width && i%2==0 {
-                        //     sprites[i].screen_region[0] += 5.0;
-                        // }
-                        // else{
-                        //     sprites[i].screen_region[0] = 0.0;
-                        // }
+
+                        direction_switch_counter += 1;
+
+                        if direction_switch_counter == 9 {
+                            // Switch the direction after every 3 sprites
+                            direction_switch_counter = 0;
+                            current_direction = 1 - current_direction; // Toggle between 0 and 1
+                        }
                     }
+
+
+                        // if even move right
+                        // if i%2==0{
+                        //     if sprites[i].screen_region[0] < WINDOW_WIDTH{
+                        //         sprites[i].screen_region[0] += 5.0;
+                        //     }else{
+                        //         let num = rand::thread_rng().gen_range(1..10); 
+                        //         sprites[i].screen_region[0] = 0.0;
+                        //         sprites[i].screen_region[1] =  num as f32 * CELL_HEIGHT;
+                        //     }
+                        // } else { // odd move left
+                        //     if sprites[i].screen_region[0] > 0.0{
+                        //         sprites[i].screen_region[0] -= 5.0;
+                        //     } else {
+                        //         let num = rand::thread_rng().gen_range(1..10); 
+                        //         sprites[i].screen_region[0] = WINDOW_WIDTH;
+                        //         sprites[i].screen_region[1] =  num as f32 * CELL_HEIGHT;
+                        //     }
+                        // }
+                        
+                    // }
 
                     for i in 1..sprites.len() {
                         for (cx, cy) in corners.iter(){
                             if cx >= &sprites[i].screen_region[0] && cx <= &(sprites[i].screen_region[0] + sprites[0].screen_region[2]) && cy >= &sprites[i].screen_region[1] && cy <= &(sprites[i].screen_region[1] + sprites[0].screen_region[3]) {
                                 print!("COLLIDED");
-                                game_over = true;  
+                                // game_over = true;  
                             }
                         }
                     }
