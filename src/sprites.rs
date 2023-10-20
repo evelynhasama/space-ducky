@@ -81,42 +81,6 @@ pub fn create_sprites() ->  Vec<GPUSprite> {
         // }
     }
     sprites
-    
-    // return vec![
-    //     GPUSprite {
-    //         screen_region: [WINDOW_WIDTH/2.0, 32.0, 64.0, 64.0],
-    //         sheet_region: [0.0, 0.0, 0.5, 0.5], // duck
-    //     },
-    //     GPUSprite {
-    //         screen_region: [WINDOW_WIDTH, rand::thread_rng().gen_range(1..NUMBER_OF_CELLS) as f32 * CELL_HEIGHT, 64.0, 64.0],
-    //         sheet_region: [0.5, 0.0, 0.5, 0.5], //bomb
-    //     },
-    //     GPUSprite {
-    //         screen_region: [0.0, rand::thread_rng().gen_range(1..NUMBER_OF_CELLS) as f32 * CELL_HEIGHT, 64.0, 64.0],
-    //         sheet_region: [0.5, 0.5, 0.5, 0.5], // asteroid
-    //     },
-    //     GPUSprite {
-    //         screen_region: [WINDOW_WIDTH, rand::thread_rng().gen_range(1..NUMBER_OF_CELLS) as f32 * CELL_HEIGHT, 64.0, 64.0],
-    //         // screen_region: [128.0, 128.0, 64.0, 64.0],
-    //         sheet_region: [0.5, 0.0, 0.5, 0.5], //bomb
-    //     },
-    //     GPUSprite {
-    //         screen_region: [0.0, rand::thread_rng().gen_range(1..NUMBER_OF_CELLS) as f32 * CELL_HEIGHT, 64.0, 64.0],
-    //         sheet_region: [0.0, 0.5, 0.5, 0.5], // star
-    //     },
-    //     GPUSprite {
-    //         screen_region: [WINDOW_WIDTH, rand::thread_rng().gen_range(1..NUMBER_OF_CELLS) as f32 * CELL_HEIGHT, 64.0, 64.0],
-    //         sheet_region: [0.5, 0.0, 0.5, 0.5], //bomb
-    //     },
-    //     GPUSprite {
-    //         screen_region: [0.0, rand::thread_rng().gen_range(1..NUMBER_OF_CELLS) as f32 * CELL_HEIGHT, 64.0, 64.0],
-    //         sheet_region: [0.5, 0.5, 0.5, 0.5], // asteroid
-    //     },
-    //     GPUSprite {
-    //         screen_region: [WINDOW_WIDTH, rand::thread_rng().gen_range(1..NUMBER_OF_CELLS) as f32 * CELL_HEIGHT, 64.0, 64.0],
-    //         sheet_region: [0.5, 0.0, 0.5, 0.5], //bomb
-    //     },
-    // ];
 
 }
 
