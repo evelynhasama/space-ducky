@@ -25,42 +25,63 @@ pub enum SpriteOption {
 }
 
 pub fn create_sprites() ->  Vec<GPUSprite> {
-    
-    return vec![
-        GPUSprite {
-            screen_region: [WINDOW_WIDTH/2.0, 32.0, 64.0, 64.0],
-            sheet_region: [0.0, 0.0, 0.5, 0.5], // duck
-        },
-        GPUSprite {
-            screen_region: [WINDOW_WIDTH, rand::thread_rng().gen_range(1..NUMBER_OF_CELLS) as f32 * CELL_HEIGHT, 64.0, 64.0],
-            sheet_region: [0.5, 0.0, 0.5, 0.5], //bomb
-        },
-        GPUSprite {
-            screen_region: [0.0, rand::thread_rng().gen_range(1..NUMBER_OF_CELLS) as f32 * CELL_HEIGHT, 64.0, 64.0],
-            sheet_region: [0.5, 0.5, 0.5, 0.5], // asteroid
-        },
-        GPUSprite {
-            screen_region: [WINDOW_WIDTH, rand::thread_rng().gen_range(1..NUMBER_OF_CELLS) as f32 * CELL_HEIGHT, 64.0, 64.0],
-            // screen_region: [128.0, 128.0, 64.0, 64.0],
-            sheet_region: [0.5, 0.0, 0.5, 0.5], //bomb
-        },
-        GPUSprite {
-            screen_region: [0.0, rand::thread_rng().gen_range(1..NUMBER_OF_CELLS) as f32 * CELL_HEIGHT, 64.0, 64.0],
-            sheet_region: [0.0, 0.5, 0.5, 0.5], // star
-        },
-        GPUSprite {
-            screen_region: [WINDOW_WIDTH, rand::thread_rng().gen_range(1..NUMBER_OF_CELLS) as f32 * CELL_HEIGHT, 64.0, 64.0],
-            sheet_region: [0.5, 0.0, 0.5, 0.5], //bomb
-        },
-        GPUSprite {
-            screen_region: [0.0, rand::thread_rng().gen_range(1..NUMBER_OF_CELLS) as f32 * CELL_HEIGHT, 64.0, 64.0],
-            sheet_region: [0.5, 0.5, 0.5, 0.5], // asteroid
-        },
-        GPUSprite {
-            screen_region: [WINDOW_WIDTH, rand::thread_rng().gen_range(1..NUMBER_OF_CELLS) as f32 * CELL_HEIGHT, 64.0, 64.0],
-            sheet_region: [0.5, 0.0, 0.5, 0.5], //bomb
-        },
-    ];
+
+    let mut sprites: Vec<GPUSprite> = vec![GPUSprite {
+        screen_region: [WINDOW_WIDTH/2.0, 32.0, 64.0, 64.0],
+        sheet_region: [0.0, 0.0, 0.5, 0.5], // duck
+    }];
+
+
+    for y in (1..NUMBER_OF_CELLS-1).step_by(2) {
+        // Create a horizontal line of stars, asteroids, and bombs
+        // for x in 1..3 {
+            let y_value = y as f32 * CELL_HEIGHT;
+
+            // STARS
+            sprites.push(GPUSprite {
+                screen_region: [1 as f32 * CELL_WIDTH, y_value, 64.0, 64.0],
+                sheet_region: [0.0, 0.5, 0.5, 0.5], // star
+            });
+            sprites.push(GPUSprite {
+                screen_region: [2 as f32 * CELL_WIDTH, y_value, 64.0, 64.0],
+                sheet_region: [0.0, 0.5, 0.5, 0.5], // star
+            });
+            sprites.push(GPUSprite {
+                screen_region: [3 as f32 * CELL_WIDTH, y_value, 64.0, 64.0],
+                sheet_region: [0.0, 0.5, 0.5, 0.5], // star
+            });
+
+            // ASTEROIDS
+            sprites.push(GPUSprite {
+                screen_region: [6 as f32 * CELL_WIDTH, y_value, 64.0, 64.0],
+                sheet_region: [0.5, 0.5, 0.5, 0.5], // asteroid
+            });
+            sprites.push(GPUSprite {
+                screen_region: [7 as f32 * CELL_WIDTH, y_value, 64.0, 64.0],
+                sheet_region: [0.5, 0.5, 0.5, 0.5], // asteroid
+            });
+            sprites.push(GPUSprite {
+                screen_region: [8 as f32 * CELL_WIDTH, y_value, 64.0, 64.0],
+                sheet_region: [0.5, 0.5, 0.5, 0.5], // asteroid
+            });
+
+            // BOMBS
+            sprites.push(GPUSprite {
+                screen_region: [11 as f32 * CELL_WIDTH, y_value, 64.0, 64.0],
+                sheet_region: [0.5, 0.0, 0.5, 0.5], // bomb
+            });
+            sprites.push(GPUSprite {
+                screen_region: [12 as f32 * CELL_WIDTH, y_value, 64.0, 64.0],
+                sheet_region: [0.5, 0.0, 0.5, 0.5], // bomb
+            });
+            sprites.push(GPUSprite {
+                screen_region: [13 as f32 * CELL_WIDTH, y_value, 64.0, 64.0],
+                sheet_region: [0.5, 0.0, 0.5, 0.5], // bomb
+            });
+        // }
+    }
+    sprites
+
 }
 
 pub fn move_sprite_input(input: &Input, mut sprite_position: [f32; 2]) -> [f32; 2] {
