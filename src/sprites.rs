@@ -25,58 +25,60 @@ pub enum SpriteOption {
 }
 
 pub fn create_sprites() ->  Vec<GPUSprite> {
-
+    // screen region: 
+    // sheet region: left x, top y,  width, height
     let mut sprites: Vec<GPUSprite> = vec![GPUSprite {
-        screen_region: [WINDOW_WIDTH/2.0, 32.0, 64.0, 64.0],
-        sheet_region: [0.0, 0.0, 0.5, 0.5], // duck
+        screen_region: [WINDOW_WIDTH/2.0, 32.0, 45.0, 45.0],
+        // sheet_region: [0.0, 0.0, 0.5, 0.5], // duck
+        sheet_region: [0.0625, 0.0625, 0.3125, 0.375], // duck
     }];
 
 
-    for y in (1..NUMBER_OF_CELLS-1).step_by(2) {
+    for y in (2..NUMBER_OF_CELLS-1).step_by(2) {
         // Create a horizontal line of stars, asteroids, and bombs
         // for x in 1..3 {
             let y_value = y as f32 * CELL_HEIGHT;
 
             // STARS
             sprites.push(GPUSprite {
-                screen_region: [1 as f32 * CELL_WIDTH, y_value, 64.0, 64.0],
-                sheet_region: [0.0, 0.5, 0.5, 0.5], // star
+                screen_region: [1 as f32 * CELL_WIDTH, y_value, 45.0, 45.0],
+                sheet_region: [0.125, 0.625, 0.25, 0.25], // star
             });
             sprites.push(GPUSprite {
-                screen_region: [2 as f32 * CELL_WIDTH, y_value, 64.0, 64.0],
-                sheet_region: [0.0, 0.5, 0.5, 0.5], // star
+                screen_region: [2 as f32 * CELL_WIDTH, y_value, 45.0, 45.0],
+                sheet_region: [0.125, 0.625, 0.25, 0.25], // star
             });
             sprites.push(GPUSprite {
-                screen_region: [3 as f32 * CELL_WIDTH, y_value, 64.0, 64.0],
-                sheet_region: [0.0, 0.5, 0.5, 0.5], // star
+                screen_region: [3 as f32 * CELL_WIDTH, y_value, 45.0, 45.0],
+                sheet_region: [0.125, 0.625, 0.25, 0.25], // star
             });
 
             // ASTEROIDS
             sprites.push(GPUSprite {
-                screen_region: [6 as f32 * CELL_WIDTH, y_value, 64.0, 64.0],
-                sheet_region: [0.5, 0.5, 0.5, 0.5], // asteroid
+                screen_region: [6 as f32 * CELL_WIDTH, y_value, 50.0, 50.0],
+                sheet_region: [0.5625, 0.6, 0.375, 0.25], // asteroid
             });
             sprites.push(GPUSprite {
-                screen_region: [7 as f32 * CELL_WIDTH, y_value, 64.0, 64.0],
-                sheet_region: [0.5, 0.5, 0.5, 0.5], // asteroid
+                screen_region: [7 as f32 * CELL_WIDTH, y_value, 50.0, 50.0],
+                sheet_region: [0.5625, 0.6, 0.375, 0.25], // asteroid
             });
             sprites.push(GPUSprite {
-                screen_region: [8 as f32 * CELL_WIDTH, y_value, 64.0, 64.0],
-                sheet_region: [0.5, 0.5, 0.5, 0.5], // asteroid
+                screen_region: [8 as f32 * CELL_WIDTH, y_value, 50.0, 50.0],
+                sheet_region: [0.5625, 0.6, 0.375, 0.25], // asteroid
             });
 
             // BOMBS
             sprites.push(GPUSprite {
-                screen_region: [11 as f32 * CELL_WIDTH, y_value, 64.0, 64.0],
-                sheet_region: [0.5, 0.0, 0.5, 0.5], // bomb
+                screen_region: [11 as f32 * CELL_WIDTH, y_value, 45.0, 45.0],
+                sheet_region: [0.625, 0.125, 0.25, 0.25], // bomb
             });
             sprites.push(GPUSprite {
-                screen_region: [12 as f32 * CELL_WIDTH, y_value, 64.0, 64.0],
-                sheet_region: [0.5, 0.0, 0.5, 0.5], // bomb
+                screen_region: [12 as f32 * CELL_WIDTH, y_value, 45.0, 45.0],
+                sheet_region: [0.625, 0.125, 0.25, 0.25], // bomb
             });
             sprites.push(GPUSprite {
-                screen_region: [13 as f32 * CELL_WIDTH, y_value, 64.0, 64.0],
-                sheet_region: [0.5, 0.0, 0.5, 0.5], // bomb
+                screen_region: [13 as f32 * CELL_WIDTH, y_value, 45.0, 45.0],
+                sheet_region: [0.625, 0.125, 0.25, 0.25], // bomb
             });
         // }
     }

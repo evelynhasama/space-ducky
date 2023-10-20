@@ -462,7 +462,7 @@ async fn run(event_loop: EventLoop<()>, window: Window) {
                         for (cx, cy) in corners.iter(){
                             if cx >= &sprites[i].screen_region[0] && cx <= &(sprites[i].screen_region[0] + sprites[0].screen_region[2]) && cy >= &sprites[i].screen_region[1] && cy <= &(sprites[i].screen_region[1] + sprites[0].screen_region[3]) {
                                 print!("COLLIDED");
-                                // game_over = true;  
+                                game_over = true;  
                             }
                         }
                     }
